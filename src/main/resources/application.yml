@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: rinhabackend2025
+  threads:
+    virtual:
+      enabled: true
+
+  datasource:
+    url: jdbc:postgresql://${DBSERVER:localhost}:5432/${DBNAME:payments}
+    username: ${DBUSER:payments}
+    password: ${DBPASS:paymentspass}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+env:
+  NATS_SERVER: ${NATS_SERVER:nats://localhost:4222}
+  API_PAYMENT_DEFAULT: ${API_PAYMENT_DEFAULT:http://localhost:8001/payments}
+  API_PAYMENT_FALLBACK: ${API_PAYMENT_FALLBACK:http://localhost:8002/payments}
+  NOME_FILA: ${NOME_FILA:topico.pagamento}
+
