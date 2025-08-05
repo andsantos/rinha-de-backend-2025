@@ -18,7 +18,7 @@ public class JSONUtil {
         try {
             return objectMapper.readValue(json, Pagamento.class);
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao converter JSON para record", e);
+            throw new RuntimeException("Erro ao converter JSON para record: ", e);
         }
     }
 }

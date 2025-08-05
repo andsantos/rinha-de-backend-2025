@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.andsantos.model.Resumo;
+import com.andsantos.repositorio.PagamentoRepository;
+
 import io.nats.client.Connection;
 
 @Controller
@@ -20,35 +23,25 @@ public class PagamentoController {
     private String nomeFila;
 
     private final Connection natsConnection;
+    private final PagamentoRepository repository;
 
-    public PagamentoController(Connection natsConnection) {
+    public PagamentoController(Connection natsConnection, PagamentoRepository repository) {
         this.natsConnection = natsConnection;
+        this.repository = repository;
     }
 
     @PostMapping("/payments")
     public ResponseEntity<Void> enviarMensagem(@RequestBody String mensagem) throws Exception {
-        String data = ", \"requestAt\" : \"" + Instant.now() + "\" } ";
+        String data = ", \"requestedAt\" : \"" + Instant.now() + "\" } ";
 
         natsConnection.publish(nomeFila, mensagem.replace("}", data).getBytes());
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/payments-summary")
-    public ResponseEntity<String> obterResumo(@RequestParam(required = false) LocalDateTime from,
+    public ResponseEntity<Resumo> obterResumo(@RequestParam(required = false) LocalDateTime from,
             @RequestParam(required = false) LocalDateTime to) throws Exception {
-        String json = """
-                {
-                    "default" : {
-                        "totalRequests": 43236,
-                        "totalAmount": 415542345.98
-                    },
-                    "fallback" : {
-                        "totalRequests": 423545,
-                        "totalAmount": 329347.34
-                    }
-                }
-                        """;
-
-        return ResponseEntity.ok(json);
+        Resumo resumo = repository.obterResumo(from, to);
+        return ResponseEntity.ok(resumo);
     }
 }

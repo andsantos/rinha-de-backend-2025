@@ -1,0 +1,105 @@
+version: '3.8'
+
+networks:
+  payment:
+    driver: bridge
+  payment-processor:
+    external: true
+
+services:
+  payment-proxy:
+    image: nginx
+    container_name: payment-proxy
+    ports:
+      - 9999:9999
+    networks:
+      - payment
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - payment-api
+      - payment-api2
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: "0.30"
+#          memory: "10MB"
+
+  payment-messaging:
+    image: nats:latest
+    container_name: payment-messaging
+    ports:
+      - "4222:4222" 
+    networks:
+      - payment
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: "0.30"
+#          memory: "10MB"
+
+  payment-database:
+    image: postgres:17-alpine
+    container_name: payment-database
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=payments
+      - POSTGRES_USER=payments
+      - POSTGRES_PASSWORD=paymentspass
+    ports:
+      - "5432:5432"
+    networks:
+      - payment
+    volumes:
+      - ./docker/init-db:/docker-entrypoint-initdb.d
+    command: >
+      postgres
+        -c shared_buffers=16MB
+        -c work_mem=1MB
+        -c maintenance_work_mem=8MB
+        -c effective_cache_size=32MB
+        -c max_connections=10
+        -c log_min_messages=WARNING
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: "0.30"
+#          memory: "10MB"
+
+  payment-api: &api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: payment-api
+    environment:
+      - DBSERVER=payment-database
+      - DBNAME=payments
+      - DBUSER=payments
+      - DBPASS=paymentspass
+      - NATS_SERVER=nats://payment-messaging:4222
+      - API_PAYMENT_DEFAULT=http://payment-processor-default:8080/payments
+      - API_PAYMENT_FALLBACK=http://payment-processor-fallback:8080payments
+      - NOME_FILA=topico.pagamento1
+    ports:
+      - 8080:8080
+    depends_on:
+      - payment-database
+      - payment-messaging
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.35'
+#          memory: '200MB'
+
+  payment-api2:
+    <<: *api
+    container_name: payment-api2
+    ports:
+      - 8081:8080
+    environment:
+      - NOME_FILA=topico.pagamento2
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.35'
+#          memory: '200MB'
