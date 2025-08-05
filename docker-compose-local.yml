@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  nats:
+    image: nats:latest
+    container_name: nats
+    ports:
+      - "4222:4222"     # Client connections
+      - "8222:8222"     # Monitoring interface
+#    command: [
+#      "-js",            # Habilita o JetStream
+#      "-m", "8222"      # Porta de monitoramento
+#    ]
+    deploy:
+      resources:
+        limits:
+          memory: 20M
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: payments
+      POSTGRES_USER: payments
+      POSTGRES_PASSWORD: paymentspass
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/init-db:/docker-entrypoint-initdb.d
+    deploy:
+      resources:
+        limits:
+          memory: 100M
+    command: >
+      postgres
+        -c shared_buffers=16MB
+        -c work_mem=1MB
+        -c maintenance_work_mem=8MB
+        -c effective_cache_size=32MB
+        -c max_connections=10
+        -c log_min_messages=WARNING
