@@ -75,4 +75,9 @@ public class PagamentoRepository {
 
         return resumo;
     }
+
+    @Transactional
+    public void purge() {
+        jdbcTemplate.update("DELETE FROM PAYMENTS ");
+    }
 }

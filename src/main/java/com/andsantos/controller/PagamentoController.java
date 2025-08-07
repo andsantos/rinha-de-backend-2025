@@ -44,4 +44,14 @@ public class PagamentoController {
         Resumo resumo = repository.obterResumo(from, to);
         return ResponseEntity.ok(resumo);
     }
+
+    @PostMapping("/admin/purge-payments")
+    public ResponseEntity<String> zerarBase() throws Exception {
+
+        repository.purge();
+
+        return ResponseEntity.ok("""
+                { "message": "All payments purged." }
+                """);
+    }
 }
