@@ -2,7 +2,7 @@ package com.andsantos.repositorio;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +30,7 @@ public class PagamentoRepository {
         jdbcTemplate.update(sql, pagamento.correlationId(), pagamento.amount(), pagamento.requestedAt(), processor);
     }
 
-    public Resumo obterResumo(LocalDateTime from, LocalDateTime to) {
+    public Resumo obterResumo(Instant from, Instant to) {
         Resumo resumo = new Resumo();
 
         String sql = """
@@ -38,7 +38,7 @@ public class PagamentoRepository {
                     FROM PAYMENTS
                 """;
 
-        List<LocalDateTime> params = new ArrayList<>();
+        List<Instant> params = new ArrayList<>();
         String filtro = null;
 
         if (from != null && to != null) {

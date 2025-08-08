@@ -1,7 +1,6 @@
 package com.andsantos.controller;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -33,14 +32,13 @@ public class PagamentoController {
     @PostMapping("/payments")
     public ResponseEntity<Void> enviarMensagem(@RequestBody String mensagem) throws Exception {
         String data = ", \"requestedAt\" : \"" + Instant.now() + "\" } ";
-
         natsConnection.publish(nomeFila, mensagem.replace("}", data).getBytes());
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/payments-summary")
-    public ResponseEntity<Resumo> obterResumo(@RequestParam(required = false) LocalDateTime from,
-            @RequestParam(required = false) LocalDateTime to) throws Exception {
+    public ResponseEntity<Resumo> obterResumo(@RequestParam(required = false) Instant from,
+            @RequestParam(required = false) Instant to) throws Exception {
         Resumo resumo = repository.obterResumo(from, to);
         return ResponseEntity.ok(resumo);
     }
