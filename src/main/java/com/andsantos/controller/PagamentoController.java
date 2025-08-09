@@ -1,5 +1,6 @@
 package com.andsantos.controller;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,8 @@ import com.andsantos.model.Resumo;
 import com.andsantos.repositorio.PagamentoRepository;
 
 import io.nats.client.Connection;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Controller
 public class PagamentoController {
@@ -30,26 +33,36 @@ public class PagamentoController {
     }
 
     @PostMapping("/payments")
-    public ResponseEntity<Void> enviarMensagem(@RequestBody String mensagem) throws Exception {
-        String data = ", \"requestedAt\" : \"" + Instant.now() + "\" } ";
-        natsConnection.publish(nomeFila, mensagem.replace("}", data).getBytes());
-        return ResponseEntity.ok().build();
+    public Mono<ResponseEntity<Void>> enviarMensagem(@RequestBody String mensagem) {
+        return Mono.fromRunnable(() -> {
+            String data = ", \"requestedAt\" : \"" + Instant.now() + "\" } ";
+            natsConnection.publish(nomeFila, mensagem.replace("}", data).getBytes(StandardCharsets.UTF_8));
+        })
+                .subscribeOn(Schedulers.boundedElastic())
+                .then(Mono.just(ResponseEntity.ok().build()));
     }
 
     @GetMapping("/payments-summary")
-    public ResponseEntity<Resumo> obterResumo(@RequestParam(required = false) Instant from,
-            @RequestParam(required = false) Instant to) throws Exception {
-        Resumo resumo = repository.obterResumo(from, to);
-        return ResponseEntity.ok(resumo);
+    public Mono<ResponseEntity<Resumo>> obterResumo(@RequestParam(required = false) Instant from,
+            @RequestParam(required = false) Instant to) {
+        return Mono.fromCallable(() -> repository.obterResumo(from, to))
+                .subscribeOn(Schedulers.boundedElastic())
+                .map(ResponseEntity::ok);
     }
 
     @PostMapping("/admin/purge-payments")
-    public ResponseEntity<String> zerarBase() throws Exception {
+    public Mono<ResponseEntity<String>> zerarBase() {
+        return Mono.fromRunnable(repository::purge)
+                .subscribeOn(Schedulers.boundedElastic())
+                .then(Mono.just(ResponseEntity.ok("""
+                        { "message": "All payments purged." }
+                        """)));
+    }
 
-        repository.purge();
-
-        return ResponseEntity.ok("""
-                { "message": "All payments purged." }
-                """);
+    @GetMapping("/health")
+    public Mono<ResponseEntity<String>> status() {
+        return Mono.just(ResponseEntity.ok("""
+                "status" : "OK"
+                """));
     }
 }
