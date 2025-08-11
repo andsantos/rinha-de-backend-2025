@@ -2,7 +2,8 @@ package com.andsantos.repositorio;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class PagamentoRepository {
         jdbcTemplate.update(sql, pagamento.correlationId(), pagamento.amount(), pagamento.requestedAt(), processor);
     }
 
-    public Resumo obterResumo(Instant from, Instant to) {
+    public Resumo obterResumo(ZonedDateTime from, ZonedDateTime to) {
         Resumo resumo = new Resumo();
 
         String sql = """
@@ -38,19 +39,19 @@ public class PagamentoRepository {
                     FROM PAYMENTS
                 """;
 
-        List<Instant> params = new ArrayList<>();
+        List<LocalDateTime> params = new ArrayList<>();
         String filtro = null;
 
         if (from != null && to != null) {
             filtro = " REQUESTED_AT BETWEEN ? AND ? ";
-            params.add(from);
-            params.add(to);
+            params.add(from.toLocalDateTime());
+            params.add(to.toLocalDateTime());
         } else if (from != null) {
             filtro = " REQUESTED_AT >= ? ";
-            params.add(from);
+            params.add(from.toLocalDateTime());
         } else if (to != null) {
             filtro = " REQUESTED_AT <= ? ";
-            params.add(to);
+            params.add(to.toLocalDateTime());
         }
 
         if (filtro != null) {

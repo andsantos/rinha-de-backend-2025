@@ -2,6 +2,7 @@ package com.andsantos.controller;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -43,8 +44,8 @@ public class PagamentoController {
     }
 
     @GetMapping("/payments-summary")
-    public Mono<ResponseEntity<Resumo>> obterResumo(@RequestParam(required = false) Instant from,
-            @RequestParam(required = false) Instant to) {
+    public Mono<ResponseEntity<Resumo>> obterResumo(@RequestParam(required = false) ZonedDateTime from,
+            @RequestParam(required = false) ZonedDateTime to) {
         return Mono.fromCallable(() -> repository.obterResumo(from, to))
                 .subscribeOn(Schedulers.boundedElastic())
                 .map(ResponseEntity::ok);

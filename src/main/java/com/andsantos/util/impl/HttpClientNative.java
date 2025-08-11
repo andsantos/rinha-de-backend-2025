@@ -27,7 +27,6 @@ public class HttpClientNative {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("Erro ao enviar requisição: " + url + ": " + e.getMessage(), e);
         }
     }

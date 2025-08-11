@@ -9,8 +9,22 @@ spring:
     url: jdbc:postgresql://${DBSERVER:localhost}:5432/${DBNAME:payments}
     username: ${DBUSER:payments}
     password: ${DBPASS:paymentspass}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 3000
+      idle-timeout: 10000
+      max-lifetime: 30000
+      validation-timeout: 2000
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  error:
+   include-exception: false
+   include-stacktrace: never
+   include-message: always
+   include-binding-errors: never
 
 env:
   NATS_SERVER: ${NATS_SERVER:nats://localhost:4222}
