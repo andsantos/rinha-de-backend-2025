@@ -79,6 +79,6 @@ public class PagamentoRepository {
 
     @Transactional
     public void purge() {
-        jdbcTemplate.update("DELETE FROM PAYMENTS ");
+        jdbcTemplate.update("TRUCATE TABLE PAYMENTS ");
     }
 }

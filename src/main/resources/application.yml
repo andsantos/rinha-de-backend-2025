@@ -1,6 +1,8 @@
 spring:
   application:
     name: rinhabackend2025
+  main:
+    banner-mode: off
   threads:
     virtual:
       enabled: true
@@ -14,10 +16,14 @@ spring:
       minimum-idle: 1
       connection-timeout: 3000
       idle-timeout: 10000
-      max-lifetime: 30000
+      max-lifetime: 30001
+      keepalive-time: 30000
       validation-timeout: 2000
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
 
 server:
   error:
@@ -25,6 +31,10 @@ server:
    include-stacktrace: never
    include-message: always
    include-binding-errors: never
+
+logging:
+  level:
+   root: WARN
 
 env:
   NATS_SERVER: ${NATS_SERVER:nats://localhost:4222}
