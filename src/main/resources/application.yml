@@ -35,20 +35,20 @@ server:
 logging:
   level:
     root: WARN
-    reactor:
-      netty:
-       http:
-         client: DEBUG # Nível de log para o cliente HTTP do Reactor Netty
-    com:
-      andsantos:
-      service:
-        PagamentoService: DEBUG # Nível de log para o seu serviço específico
-    org:
-      springframework:
-        web:
-          reactive:
-            function:
-              client: DEBUG
+#    reactor:
+#      netty:
+#        http:
+#          client: DEBUG
+#    com:
+#      andsantos:
+#      service:
+#        PagamentoService: DEBUG
+#    org:
+#      springframework:
+#        web:
+#          reactive:
+#            function:
+#              client: DEBUG
 
 env:
   NATS_SERVER: ${NATS_SERVER:nats://localhost:4222}

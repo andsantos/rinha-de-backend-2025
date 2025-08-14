@@ -36,6 +36,8 @@ public class PagamentoService {
     private final WebClient webClient;
     private final PagamentoRepository repository;
     private final JSONUtil jsonUtil;
+    private static final int NR_TENTATIVAS_PADRAO = 7;
+    private static final int NR_TENTATIVAS_FALLBACK = 3;
 
     public PagamentoService(Connection natsConnection, WebClient webClient,
             PagamentoRepository repository, JSONUtil jsonUtil) {
@@ -54,9 +56,9 @@ public class PagamentoService {
     protected void processar(Message msg) {
         String conteudo = new String(msg.getData(), StandardCharsets.UTF_8);
 
-        processar(conteudo).doOnError(err -> {
+        envioPadrao(conteudo).doOnError(err -> {
             System.err.println("Erro ao processar mensagem: " + err.getMessage());
-        });
+        }).subscribe();
     }
 
     @PreDestroy
@@ -66,7 +68,7 @@ public class PagamentoService {
         }
     }
 
-    protected Mono<Void> processar(String conteudo) {
+    protected Mono<Void> envioPadrao(String conteudo) {
         return webClient.post()
                 .uri(apiProcessorDefault)
                 .header("Content-Type", "application/json")
@@ -74,7 +76,8 @@ public class PagamentoService {
                 .retrieve()
                 .toBodilessEntity()
                 .timeout(Duration.ofSeconds(5))
-                .retryWhen(Retry.backoff(5, Duration.ofMillis(200)).maxBackoff(Duration.ofSeconds(2)))
+                .retryWhen(
+                        Retry.backoff(NR_TENTATIVAS_PADRAO, Duration.ofMillis(200)).maxBackoff(Duration.ofSeconds(2)))
                 .then(Mono.fromCallable(() -> {
                     Pagamento pagamento = jsonUtil.converter(conteudo);
                     repository.registrarPagamento(pagamento, "DEFAULT");
@@ -93,7 +96,8 @@ public class PagamentoService {
                 .retrieve()
                 .toBodilessEntity()
                 .timeout(Duration.ofSeconds(5))
-                .retryWhen(Retry.backoff(5, Duration.ofMillis(200)).maxBackoff(Duration.ofSeconds(2)))
+                .retryWhen(
+                        Retry.backoff(NR_TENTATIVAS_FALLBACK, Duration.ofMillis(200)).maxBackoff(Duration.ofSeconds(2)))
                 .then(Mono.fromCallable(() -> {
                     Pagamento pagamento = jsonUtil.converter(conteudo);
                     repository.registrarPagamento(pagamento, "FALLBACK");
