@@ -2,6 +2,7 @@ version: '3.8'
 
 networks:
   payment:
+    name: payment-rinha
     driver: bridge
   payment-processor:
     external: true
@@ -19,35 +20,40 @@ services:
     depends_on:
       - payment-api
       - payment-api2
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: "0.30"
-#          memory: "10MB"
+#      payment-api:
+#        condition: service_started
+#      payment-api2:
+#        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: 0.1
+          memory: 10MB
 
   payment-messaging:
     image: nats:latest
     container_name: payment-messaging
+#    command: "-m 8222"
     ports:
-      - "4222:4222" 
+      - 4222:4222
+#      - 8222:8222
     networks:
       - payment
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: "0.30"
-#          memory: "10MB"
+    deploy:
+      resources:
+        limits:
+          cpus: 0.15
+          memory: 10MB
 
   payment-database:
     image: postgres:17-alpine
     container_name: payment-database
-    restart: unless-stopped
     environment:
       - POSTGRES_DB=payments
       - POSTGRES_USER=payments
       - POSTGRES_PASSWORD=paymentspass
     ports:
-      - "5432:5432"
+      - 5432:5432
     networks:
       - payment
     volumes:
@@ -60,11 +66,17 @@ services:
         -c effective_cache_size=32MB
         -c max_connections=10
         -c log_min_messages=WARNING
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: "0.30"
-#          memory: "10MB"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payments -d payments"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: 0.25
+          memory: 60MB
 
   payment-api: &api
     build:
@@ -78,28 +90,34 @@ services:
       - DBPASS=paymentspass
       - NATS_SERVER=nats://payment-messaging:4222
       - API_PAYMENT_DEFAULT=http://payment-processor-default:8080/payments
-      - API_PAYMENT_FALLBACK=http://payment-processor-fallback:8080payments
+      - API_PAYMENT_FALLBACK=http://payment-processor-fallback:8080/payments
       - NOME_FILA=topico.pagamento1
     ports:
       - 8080:8080
+    networks:
+      - payment
+      - payment-processor
     depends_on:
-      - payment-database
-      - payment-messaging
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: '0.35'
-#          memory: '200MB'
+#      - payment-database
+#      - payment-messaging
+      payment-database:
+        condition: service_healthy
+      payment-messaging:
+        condition: service_started
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: 0.50
+#          memory: 120MB
 
   payment-api2:
     <<: *api
     container_name: payment-api2
     ports:
       - 8081:8080
-    environment:
-      - NOME_FILA=topico.pagamento2
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: '0.35'
-#          memory: '200MB'

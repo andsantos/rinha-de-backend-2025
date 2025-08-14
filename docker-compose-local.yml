@@ -5,12 +5,11 @@ services:
     image: nats:latest
     container_name: nats
     ports:
-      - "4222:4222"     # Client connections
-      - "8222:8222"     # Monitoring interface
-#    command: [
-#      "-js",            # Habilita o JetStream
-#      "-m", "8222"      # Porta de monitoramento
-#    ]
+      - "4222:4222" 
+      - "8222:8222"
+    command: [
+      "-m", "8222"
+    ]
     deploy:
       resources:
         limits:
