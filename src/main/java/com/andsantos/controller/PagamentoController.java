@@ -14,33 +14,32 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.andsantos.model.Resumo;
 import com.andsantos.repositorio.PagamentoRepository;
+import com.andsantos.service.NatsPublisher;
 
-import io.nats.client.Connection;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 @Controller
 public class PagamentoController {
 
+    private final NatsPublisher publisher;
+    private final PagamentoRepository repository;
+
     @Value("${env.NOME_FILA}")
     private String nomeFila;
 
-    private final Connection natsConnection;
-    private final PagamentoRepository repository;
-
-    public PagamentoController(Connection natsConnection, PagamentoRepository repository) {
-        this.natsConnection = natsConnection;
+    public PagamentoController(NatsPublisher pub, PagamentoRepository repository) {
+        this.publisher = pub;
         this.repository = repository;
     }
 
     @PostMapping("/payments")
     public Mono<ResponseEntity<Void>> enviarMensagem(@RequestBody String mensagem) {
-        return Mono.fromRunnable(() -> {
-            String data = ", \"requestedAt\" : \"" + Instant.now() + "\" } ";
-            natsConnection.publish(nomeFila, mensagem.replace("}", data).getBytes(StandardCharsets.UTF_8));
-        })
-                .subscribeOn(Schedulers.boundedElastic())
-                .then(Mono.just(ResponseEntity.ok().build()));
+        String data = ", \"requestedAt\" : \"" + Instant.now() + "\" } ";
+        String payload = mensagem.replace("}", data);
+
+        return publisher.publish(nomeFila, payload.getBytes(StandardCharsets.UTF_8))
+                .thenReturn(ResponseEntity.ok().build());
     }
 
     @GetMapping("/payments-summary")
@@ -61,9 +60,7 @@ public class PagamentoController {
     }
 
     @GetMapping("/health")
-    public Mono<ResponseEntity<String>> status() {
-        return Mono.just(ResponseEntity.ok("""
-                "status" : "OK"
-                """));
+    public Mono<String> status() {
+        return Mono.just("OK");
     }
 }
