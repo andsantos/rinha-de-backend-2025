@@ -65,18 +65,33 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <image>
+                        <builder>paketobuildpacks/builder:tiny</builder>
+                    </image>
+                </configuration>
             </plugin>
-        <plugin>
-            <groupId>org.graalvm.buildtools</groupId>
-            <artifactId>native-maven-plugin</artifactId>
-            <version>0.11.0</version>
-            <extensions>true</extensions>
-            <configuration>
-                <imageName>${project.artifactId}</imageName>
-                <mainClass>com.andsantos.Rinhabackend2025Application</mainClass>
-            </configuration>
-        </plugin>
+            <plugin>
+                <groupId>org.graalvm.buildtools</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <version>0.11.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <imageName>${project.artifactId}</imageName>
+                    <mainClass>com.andsantos.Rinhabackend2025Application</mainClass>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>native</id>
+            <properties>
+                <spring-boot.aot.enabled>true</spring-boot.aot.enabled>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

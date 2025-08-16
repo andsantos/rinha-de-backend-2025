@@ -1,8 +1,13 @@
-#FROM eclipse-temurin:17-jre-alpine
-FROM ghcr.io/graalvm/jdk-community:24
+FROM alpine:3.20
 
-ARG JAR_FILE=target/*.jar
+RUN apk add --no-cache libstdc++ libc6-compat
 
-COPY ${JAR_FILE} app.jar
+WORKDIR /app
 
-ENTRYPOINT ["java", "-XX:+UseZGC", "-XX:ZUncommitDelay=10", "-jar", "app.jar"]
+COPY target/rinhabackend2025 /app/rinhabackend2025
+
+RUN chmod +x /app/rinhabackend2025
+
+EXPOSE 8080
+
+ENTRYPOINT ["/app/rinhabackend2025"]
