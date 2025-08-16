@@ -16,11 +16,10 @@ jobs:
         with:
           java-version: '24'
           distribution: 'graalvm'
-          components: 'native-image'
           cache: maven
 
       - name: Compilar para executável nativo
-        run: ./mvnw clean native:compile -DskipTests
+        run: mvn clean native:compile -DskipTests
 
       - name: Fazer upload do executável para a release
         uses: softprops/action-gh-release@v2
