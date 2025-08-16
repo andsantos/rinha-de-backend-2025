@@ -73,6 +73,7 @@
             <extensions>true</extensions>
             <configuration>
                 <imageName>${project.artifactId}</imageName>
+                <mainClass>com.andsantos.Rinhabackend2025Application</mainClass>
             </configuration>
         </plugin>
         </plugins>
