@@ -28,7 +28,8 @@ jobs:
         with:
           tag_name: v1.0.0
           name: "Release v1.0.0"
-          files: target/rinhabackend2025-0.0.1.jar
-          files: target/rinhabackend2025
+          files: |
+            target/rinhabackend2025-0.0.1.jar
+            target/rinhabackend2025
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
