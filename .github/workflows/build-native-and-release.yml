@@ -21,7 +21,7 @@ jobs:
           cache: maven
 
       - name: Compilar para executável nativo
-        run: mvn clean native:compile -DskipTests
+        run: mvn -Pnative clean native:compile -DskipTests
 
       - name: Fazer upload do executável para a release
         uses: softprops/action-gh-release@v2
