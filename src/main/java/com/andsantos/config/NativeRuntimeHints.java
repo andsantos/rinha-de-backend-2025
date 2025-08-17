@@ -1,5 +1,8 @@
 package com.andsantos.config;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.TypeReference;
@@ -23,8 +26,14 @@ public class NativeRuntimeHints {
                     java.util.List.of(
                             TypeReference.of(Resumo.class),
                             TypeReference.of(ResumoDetalhe.class),
-                            TypeReference.of(Pagamento.class)),
+                            TypeReference.of(Pagamento.class),
+                            TypeReference.of(BigDecimal.class),
+                            TypeReference.of(LocalDateTime.class)),
                     hint -> hint.withMembers());
+
+            hints.serialization().registerType(TypeReference.of(Pagamento.class));
+            hints.serialization().registerType(TypeReference.of(Resumo.class));
+            hints.serialization().registerType(TypeReference.of(ResumoDetalhe.class));
         }
     }
 }
