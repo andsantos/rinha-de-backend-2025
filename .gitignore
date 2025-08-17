@@ -21,3 +21,7 @@ target/
 .settings
 .springBeans
 .sts4-cache
+
+logs.txt
+partial-results.json
+
