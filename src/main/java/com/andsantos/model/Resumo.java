@@ -1,7 +1,10 @@
 package com.andsantos.model;
 
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@RegisterReflectionForBinding(Resumo.class)
 public class Resumo {
     @JsonProperty(value = "default")
     private ResumoDetalhe padrao = new ResumoDetalhe();
