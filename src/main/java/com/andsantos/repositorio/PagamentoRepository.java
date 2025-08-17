@@ -1,15 +1,11 @@
 package com.andsantos.repositorio;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,17 +56,13 @@ public class PagamentoRepository {
 
         sql += " GROUP BY PROCESSOR";
 
-        jdbcTemplate.query(sql.toString(), new RowMapper<Void>() {
-            @Override
-            public Void mapRow(@NonNull ResultSet rst, int rowNum) throws SQLException {
-                if ("DEFAULT".equals(rst.getString("PROCESSOR"))) {
-                    resumo.getPadrao().setTotalRequests(rst.getLong("TOTAL"));
-                    resumo.getPadrao().setTotalAmount(rst.getBigDecimal("SOMA"));
-                } else {
-                    resumo.getFallback().setTotalRequests(rst.getLong("TOTAL"));
-                    resumo.getFallback().setTotalAmount(rst.getBigDecimal("SOMA"));
-                }
-                return null;
+        jdbcTemplate.query(sql.toString(), rst -> {
+            if ("DEFAULT".equals(rst.getString("PROCESSOR"))) {
+                resumo.getPadrao().setTotalRequests(rst.getLong("TOTAL"));
+                resumo.getPadrao().setTotalAmount(rst.getBigDecimal("SOMA"));
+            } else {
+                resumo.getFallback().setTotalRequests(rst.getLong("TOTAL"));
+                resumo.getFallback().setTotalAmount(rst.getBigDecimal("SOMA"));
             }
         }, params.toArray());
 

@@ -2,6 +2,9 @@ package com.andsantos.config;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
@@ -28,6 +31,9 @@ public class NativeRuntimeHints {
                             TypeReference.of(ResumoDetalhe.class),
                             TypeReference.of(Pagamento.class),
                             TypeReference.of(BigDecimal.class),
+                            TypeReference.of(ZonedDateTime.class),
+                            TypeReference.of(ZoneId.class),
+                            TypeReference.of(DateTimeFormatter.class),
                             TypeReference.of(LocalDateTime.class)),
                     hint -> hint.withMembers());
 

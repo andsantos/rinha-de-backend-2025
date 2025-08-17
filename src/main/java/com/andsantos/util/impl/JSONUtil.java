@@ -6,14 +6,19 @@ import org.springframework.stereotype.Component;
 
 import com.andsantos.model.Pagamento;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 
 @Component
 public class JSONUtil {
     protected final Log log = LogFactory.getLog(getClass());
     private final ObjectMapper objectMapper;
 
-    public JSONUtil(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    public JSONUtil() {
+        this.objectMapper = new ObjectMapper()
+                .registerModule(new ParameterNamesModule())
+                .registerModule(new JavaTimeModule());
+
     }
 
     public Pagamento converter(String json) {
