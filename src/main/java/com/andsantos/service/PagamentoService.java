@@ -1,6 +1,5 @@
 package com.andsantos.service;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import org.apache.commons.logging.Log;
@@ -60,19 +59,17 @@ public class PagamentoService {
     }
 
     protected void processar(Message msg) {
-        String conteudo = new String(msg.getData(), StandardCharsets.UTF_8);
-
-        envioPadrao(conteudo).doOnError(err -> {
+        envioPadrao(msg.getData()).doOnError(err -> {
             log.error("Erro ao processar mensagem: ", err);
         }).subscribe();
     }
 
-    protected Mono<Void> envioPadrao(String conteudo) {
-        Pagamento pagamento = jsonUtil.converter(conteudo);
+    protected Mono<Void> envioPadrao(byte[] bytes) {
+        Pagamento pagamento = jsonUtil.converter(bytes);
         return webClient.post()
                 .uri(apiProcessorDefault)
                 .header("Content-Type", "application/json")
-                .bodyValue(conteudo)
+                .bodyValue(bytes)
                 .retrieve()
                 .toBodilessEntity()
                 .timeout(Duration.ofSeconds(5))
@@ -83,15 +80,15 @@ public class PagamentoService {
                     return null;
                 }).subscribeOn(Schedulers.boundedElastic()))
                 .onErrorResume(ex -> {
-                    return fallback(conteudo, pagamento);
+                    return fallback(bytes, pagamento);
                 }).then();
     }
 
-    protected Mono<Void> fallback(String conteudo, Pagamento pagamento) {
+    protected Mono<Void> fallback(byte[] bytes, Pagamento pagamento) {
         return webClient.post()
                 .uri(apiProcessorFallback)
                 .header("Content-Type", "application/json")
-                .bodyValue(conteudo)
+                .bodyValue(bytes)
                 .retrieve()
                 .toBodilessEntity()
                 .timeout(Duration.ofSeconds(5))

@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.andsantos.model.Resumo;
 import com.andsantos.repositorio.PagamentoRepository;
 import com.andsantos.service.NatsPublisher;
 
@@ -42,8 +42,8 @@ public class PagamentoController {
                 .thenReturn(ResponseEntity.ok().build());
     }
 
-    @GetMapping("/payments-summary")
-    public Mono<ResponseEntity<Resumo>> obterResumo(@RequestParam(required = false) ZonedDateTime from,
+    @GetMapping(value = "/payments-summary", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResponseEntity<String>> obterResumo(@RequestParam(required = false) ZonedDateTime from,
             @RequestParam(required = false) ZonedDateTime to) {
         return Mono.fromCallable(() -> repository.obterResumo(from, to))
                 .subscribeOn(Schedulers.boundedElastic())

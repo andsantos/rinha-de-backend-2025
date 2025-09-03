@@ -27,7 +27,7 @@ public class PagamentoRepository {
         jdbcTemplate.update(sql, pagamento.correlationId(), pagamento.amount(), pagamento.requestedAt(), processor);
     }
 
-    public Resumo obterResumo(ZonedDateTime from, ZonedDateTime to) {
+    public String obterResumo(ZonedDateTime from, ZonedDateTime to) {
         Resumo resumo = new Resumo();
 
         String sql = """
@@ -66,7 +66,19 @@ public class PagamentoRepository {
             }
         }, params.toArray());
 
-        return resumo;
+        return """
+                {
+                   "default" : {
+                      "totalRequests" : %d,
+                      "totalAmount" : %s
+                   },
+                   "fallback" : {
+                      "totalRequests" : %d,
+                      "totalAmount" : %s
+                   }
+                }
+                """.formatted(resumo.getPadrao().getTotalRequests(), resumo.getPadrao().getTotalAmount().toString(),
+                resumo.getFallback().getTotalRequests(), resumo.getFallback().getTotalAmount().toString());
     }
 
     @Transactional
