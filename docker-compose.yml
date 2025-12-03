@@ -9,7 +9,7 @@ networks:
 
 services:
   payment-proxy:
-    image: nginx
+    image: nginx:alpine
     container_name: payment-proxy
     ports:
       - 9999:9999
@@ -22,28 +22,36 @@ services:
       - payment-api2
 #      payment-api:
 #        condition: service_started
+#        condition: service_healthy
 #      payment-api2:
 #        condition: service_started
+#        condition: service_healthy
     deploy:
       resources:
         limits:
           cpus: 0.1
-          memory: 10MB
+          memory: 20MB
 
   payment-messaging:
-    image: nats:latest
+    image: nats:alpine
     container_name: payment-messaging
 #    command: "-m 8222"
+    command: ["nats-server"]
     ports:
       - 4222:4222
 #      - 8222:8222
     networks:
       - payment
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "4222"]
+      interval: 3s
+      timeout: 2s
+      retries: 5
     deploy:
       resources:
         limits:
-          cpus: 0.15
-          memory: 10MB
+          cpus: 0.1
+          memory: 30MB
 
   payment-database:
     image: postgres:17-alpine
@@ -75,8 +83,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 0.25
-          memory: 60MB
+          cpus: 0.3
+          memory: 100MB
 
   payment-api: &api
     build:
@@ -103,7 +111,8 @@ services:
       payment-database:
         condition: service_healthy
       payment-messaging:
-        condition: service_started
+#        condition: service_started
+        condition: service_healthy
 #    healthcheck:
 #      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
 #      interval: 10s
@@ -114,7 +123,7 @@ services:
       resources:
         limits:
           cpus: 0.50
-#          memory: 120MB
+          memory: 100MB
 
   payment-api2:
     <<: *api
