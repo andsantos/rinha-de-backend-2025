@@ -34,7 +34,21 @@ server:
 
 logging:
   level:
-   root: WARN
+    root: WARN
+#    reactor:
+#      netty:
+#        http:
+#          client: DEBUG
+#    com:
+#      andsantos:
+#      service:
+#        PagamentoService: DEBUG
+#    org:
+#      springframework:
+#        web:
+#          reactive:
+#            function:
+#              client: DEBUG
 
 env:
   NATS_SERVER: ${NATS_SERVER:nats://localhost:4222}

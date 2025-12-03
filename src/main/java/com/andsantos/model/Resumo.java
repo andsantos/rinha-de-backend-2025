@@ -1,9 +1,6 @@
 package com.andsantos.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class Resumo {
-    @JsonProperty(value = "default")
     private ResumoDetalhe padrao = new ResumoDetalhe();
     private ResumoDetalhe fallback = new ResumoDetalhe();
 

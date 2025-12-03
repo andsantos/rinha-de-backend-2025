@@ -1,0 +1,35 @@
+name: Build Native Executable
+
+on:
+  push:
+    branches: [ "main", "reativo" ]
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '24'
+          distribution: 'graalvm'
+          cache: maven
+
+      - name: Compilar para executável nativo
+        run: mvn -Pnative clean native:compile -DskipTests
+
+      - name: Fazer upload do executável para a release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: "Release v1.0.0"
+          files: |
+            target/rinhabackend2025-0.0.1.jar
+            target/rinhabackend2025
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
